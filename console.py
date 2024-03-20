@@ -3,6 +3,7 @@
 import cmd
 import sys
 import shlex
+import json
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -136,18 +137,20 @@ class HBNBCommand(cmd.Cmd):
                     try:
                         value = float(value)
                     except ValueError:
-                        pass
+                        continue
                 else:
                     try:
                         value = int(value)
                     except ValueError:
-                        pass
+                        continue
 
                 class_params[key] = value
 
         new_instance = HBNBCommand.classes[class_name](**class_params)
         new_instance.save()
         print(new_instance.id)
+        storage.new(new_instance)
+        storage.save()
 
     def help_create(self):
         """ Help information for the create method """

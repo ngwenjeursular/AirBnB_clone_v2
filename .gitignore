@@ -1,0 +1,7 @@
+# Ignore JSON files
+*.json
+
+# Ignore Vim swap files
+*.swp
+*.swo
+*.swn
