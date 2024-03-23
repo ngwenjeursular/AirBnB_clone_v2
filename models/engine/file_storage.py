@@ -36,7 +36,6 @@ class FileStorage:
                             }
                 else:
                     temp[key] = val.to_dict()
-                    temp[key].pop('_sa_instance_state', None)
             json.dump(temp, f)
 
     def reload(self):
