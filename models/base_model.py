@@ -22,15 +22,20 @@ class BaseModel:
         if not kwargs:
             from models import storage
             self.id = kwargs.get('id', str(uuid4()))
-            self.created_at = datetime.now()
-            self.updated_at = datetime.now()
-            storage.new(self)
+            self.created_at = datetime.utcnow()
+            self.updated_at = datetime.utcnow()
         else:
             # Check if 'updated_at' key is present in kwargs
+            for key, value in kwargs.items():
+                if key != '__class__':
+                    setattr(self, key, value)
+
             if 'created_at' not in kwargs:
-                kwargs['created_at'] = datetime.now()
+                kwargs['created_at'] = datetime.utcnow()
             if 'updated_at' not in kwargs:
-                kwargs['updated_at'] = datetime.now()
+                kwargs['updated_at'] = datetime.utcnow()
+            if 'id' not in kwargs.keys():
+                self.id = str(uuid.uuid4())
 
             if '__class__' in kwargs:
                 del kwargs['__class__']
@@ -48,15 +53,25 @@ class BaseModel:
     def save(self):
         """Updates updated_at with current time when instance is changed"""
         from models import storage
-        self.updated_at = datetime.now()
-        storage.save()
+        self.updated_at = datetime.utcnow()
+        models.storage.new(self)
+        models.storage.save()
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = {}
-        dictionary.update(self.__dict__)
+        dictionary = dict(self.__dict__)
+        dictionary = {key: value for key, value in self.__dict__.items()
+                       if key != '_sa_instance_state'}
+        #dictionary = dict(self.__dict__)
+        #if '_sa_instance_state' in dictionary:
+            #del(dictionary['_sa_instance_state'])
+        #dictionary.update(self.__dict__)
         dictionary.update({'__class__':
                           (str(type(self)).split('.')[-1]).split('\'')[0]})
         dictionary['created_at'] = self.created_at.isoformat()
         dictionary['updated_at'] = self.updated_at.isoformat()
         return dictionary
+
+    def delete(self):
+        """Deletes the current instance from storage"""
+        models.storage.delete(self)

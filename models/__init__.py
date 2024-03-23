@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Package initializer
+This is a Package initializer
 """
 from os import getenv
 
@@ -9,5 +9,5 @@ if getenv('HBNB_TYPE_STORAGE') == 'db':  # if storage type is database
 else:
     from models.engine.file_storage import FileStorage as Storage
 
-storage = Storage()  # instantiates storage object
+storage = Storage()
 storage.reload()
