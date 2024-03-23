@@ -3,7 +3,8 @@
 import models
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime, Integer
-import uuid
+#import uuid
+from uuid import uuid4
 from datetime import datetime
 
 Base = declarative_base()
@@ -13,14 +14,14 @@ class BaseModel:
     """A base class for all hbnb models"""
     id = Column(String(60), nullable=False, primary_key=True)
     current_time = datetime.utcnow
-    created_at = Column(DateTime, default=current_time)
-    updated_at = Column(DateTime, default=current_time)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, *args, **kwargs):
         """Instatntiates a new model"""
         if not kwargs:
             from models import storage
-            self.id = str(uuid.uuid4())
+            self.id = kwargs.get('id', str(uuid4()))
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
             storage.new(self)

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from models.state import State
 
 
 class FileStorage:
@@ -10,10 +11,13 @@ class FileStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        if cls is None:
-            return FileStorage.__objects
-        else:
-            return {key: obj for key, obj in FileStorage.__objects.items() if isinstance(obj, cls)}
+        if cls is not None:
+            fs_dict = {}
+            for key, value in self.__objects.items():
+                if cls == value.__class__ or cls == value.__class__.__name__:
+                    fs_dict[key] = value
+            return fs_dict
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -23,9 +27,16 @@ class FileStorage:
         """Saves storage dictionary to file"""
         with open(FileStorage.__file_path, 'w') as f:
             temp = {}
-            temp.update(FileStorage.__objects)
-            for key, val in temp.items():
-                temp[key] = val.to_dict()
+#            temp.update(FileStorage.__objects)
+            for key, val in FileStorage.__objects.items():
+                if isinstance(val, State):
+                    temp[key] = {
+                            "id": val.id,
+                            "name": val.name,
+                            }
+                else:
+                    temp[key] = val.to_dict()
+                    temp[key].pop('_sa_instance_state', None)
             json.dump(temp, f)
 
     def reload(self):
@@ -44,11 +55,13 @@ class FileStorage:
                     'Review': Review
                   }
         try:
-            temp = {}
+#            temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
+                print("Loaded data:", temp)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    print("Processing key:", key)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
 
@@ -58,3 +71,7 @@ class FileStorage:
             key = obj.__class__.__name__ + '.' + obj.id
             if key in self.all():
                 del self.all()[key]
+
+    def close(self):
+        """the closing method """
+        self.reload()
